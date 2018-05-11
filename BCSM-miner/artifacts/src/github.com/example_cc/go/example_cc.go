@@ -20,6 +20,8 @@ package main
 import (
 	"net"
 	"fmt"
+	"strings"
+	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -33,7 +35,19 @@ type SimpleChaincode struct {
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 	logger.Info("########### BCSM-miner Init ###########")
 
-	return shim.Success(nil)
+	var counter_text string
+	var counter int
+	var err error
+
+	counter = 0
+	counter_text = strconv.Itoa(counter)
+
+	err = stub.PutState("counter", []byte(counter_text))
+	if err == nil {
+		return shim.Success(nil)
+	}else{
+		return shim.Error(err.Error())
+	}
 }
 
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
@@ -72,9 +86,41 @@ func (t *SimpleChaincode) upload(stub shim.ChaincodeStubInterface, args []string
 	buff := make([]byte, 1024)
 	n, _ := conn.Read(buff)
 
-	logger.Infof("Receive: %s", buff[:n])
+	response_str := string(buff[:n])
 
-        return shim.Success(nil);
+	if strings.Compare(response_str, "1") == 0 {
+		var counter int
+		var counter_text string
+
+		counterbytes, err := stub.GetState("counter")
+		if err != nil {
+			return shim.Error("Failed to get counter state")
+		}
+
+		if counterbytes == nil {
+			return shim.Error("Counter is not valid")
+		}
+
+		counter_text = string(counterbytes)
+		counter, _ = strconv.Atoi(counter_text)
+
+		counter = counter + 1
+		counter_text = strconv.Itoa(counter)
+
+		err = stub.PutState("counter", []byte(counter_text))
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		err = stub.PutState(counter_text, []byte(Tx))
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		return shim.Success(nil)
+	}else{
+		return shim.Error("fail the Rx verification")
+	}
 }
 
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
