@@ -42,9 +42,6 @@ function setChaincodePath(){
 		"golang")
 		CC_SRC_PATH="github.com/example_cc/go"
 		;;
-		"node")
-		CC_SRC_PATH="$PWD/artifacts/src/github.com/example_cc/node"
-		;;
 		*) printf "\n ------ Language $LANGUAGE is not supported yet ------\n"$
 		exit 1
 	esac
@@ -154,7 +151,7 @@ curl -s -X POST \
 	\"chaincodeName\":\"mycc\",
 	\"chaincodeVersion\":\"v0\",
 	\"chaincodeType\": \"$LANGUAGE\",
-	\"args\":[\"a\",\"100\",\"b\",\"200\"]
+	\"args\":[]
 }"
 echo
 echo
@@ -167,8 +164,8 @@ TRX_ID=$(curl -s -X POST \
   -H "content-type: application/json" \
   -d '{
 	"peers": ["peer0.org1.example.com","peer1.org1.example.com"],
-	"fcn":"move",
-	"args":["a","b","10"]
+	"fcn":"upload",
+	"args":["00000001,d25d42efc7eab8b5858a942ff356f1bbe49dfa4e41545deec41b4c82f4336c0e,6e99963872938c231fb4cd812c2a66b90e3c5cb19314554ca7cad0fbbca3c8c8,124fbb74f1e4b5d0557737c8,3be6dbe33be30f34520a5aaceb21cdd2,b6eba6a2cbf7d5f45b76bd47062b0717,d67b6d0cf4113d2272914580ab2d3bbdb166bf5bb25d48da31cd0bde239c8d19,04463ee2b30e444fdadbe092052d86805e92ed713c6b650bb8c21bd307c637e0,c15987e7a4ae414db5523529db7c42e8,2aeb8e905f62fa11f107c2d6,dc6388eeb13b49ff4d78ecb033761b92,b6aaa7f3ebaa69531b77e9c4747978c0"]
 }')
 echo "Transacton ID is $TRX_ID"
 echo
